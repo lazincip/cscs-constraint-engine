@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-green.svg)](https://www.python.org/)
 [![Zero GPU Overhead](https://img.shields.io/badge/GPU_Overhead-0_MB_(Pure_CPU)-brightgreen.svg)](#quickstart)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23750262.svg)](https://doi.org/10.5281/zenodo.23750262)
 
 **A zero-GPU governor for Small Language Models.** It sits in front of a local SLM (Llama-3.2, Qwen-2.5, Phi-4, Gemma-2), blocks out-of-domain and low-quality prompts *before* they burn inference, tracks multi-turn drift, and audits outputs for confabulation — in **~0.9–1.1 ms median / < 2.0 ms P95 per turn across 300+ turn sessions**, on one CPU thread, with **numpy only** and **0 MB VRAM**.
 
