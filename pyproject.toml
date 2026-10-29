@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cscs-constraint-engine"
+version = "2026.10.1"
+description = "Zero-GPU Spectral Manifold, Banach Contraction, and Drift Telemetry Middleware for Edge & Small Language Models (SLMs)"
+readme = "README.md"
+authors = [
+    { name = "Lazaro M. Echenique-Diaz, Ph.D.", email = "lazincip@gmail.com" }
+]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.22.0"
+]
+keywords = ["SLM", "LLM", "guardrails", "manifold", "SVD", "Banach-contraction", "edge-AI", "Ollama"]
+
+[project.urls]
+Repository = "https://github.com/lazincip/cscs-constraint-engine"

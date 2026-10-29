@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use the CSCS Constraint Physics Engine in your research or software, please cite it as below."
+authors:
+  - family-names: "Echenique-Diaz"
+    given-names: "Lazaro Miguel"
+    affiliation: "Yamagata University"
+title: "CSCS Constraint Physics Engine: Zero-GPU Spectral Manifold & Contractive Telemetry Middleware for Small Language Models (SLMs)"
+version: "2026.10.1"
+date-released: "2026-10-28"
+license: Apache-2.0
+repository-code: "https://github.com/lazincip/cscs-constraint-engine"
+keywords:
+  - small-language-models
+  - slm-middleware
+  - edge-ai
+  - spectral-manifold
+  - banach-contraction
+  - hallucination-detection
+  - constraint-physics
