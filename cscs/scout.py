@@ -17,38 +17,52 @@ class RBFConstraintScout:
     """
     Maps constraint friction across the spectral manifold using a continuous
     Radial Basis Function (Gaussian kernel) estimator. Detects high-friction
-    topological walls (field_friction > 1/Φ ≈ 0.618) prior to SLM inference.
+    topological walls (field_friction > wall_threshold) prior to SLM inference.
+    Defaults to 1/Φ ≈ 0.6180 prior to calibration, shifting automatically to
+    the leave-one-out empirical seed quantile τ_95 upon graduation.
     """
 
     def __init__(self, bandwidth: float = 0.45):
         self.bandwidth = bandwidth
         self.nodes: deque = deque(maxlen=64)
+        self.wall_threshold: float = INV_PHI
+        self.calibrated: bool = False
+
+    def set_calibrated_threshold(self, tau: float):
+        self.wall_threshold = round(float(max(INV_PHI, min(0.85, tau))), 4)
+        self.calibrated = True
 
     def scout(self, coords: List[float], quality_score: float,
-              rec_error: float, resonance: float = 0.5) -> Dict[str, Any]:
-        ood_penalty = min(1.0, max(0.0, rec_error - 0.30) * 1.45)
+              rec_error: float, resonance: float = 0.5,
+              mutate: bool = True) -> Dict[str, Any]:
+        ood_penalty = min(1.0, max(0.0, (rec_error - 0.30) / 0.70))
         align_deficit = 1.0 - max(0.0, min(1.0, resonance))
         local_friction = min(
             1.0,
             0.30 * (1.0 - quality_score) + 0.45 * ood_penalty + 0.25 * align_deficit
         )
 
+        thresh = self.wall_threshold
+
         if not coords:
             return {
                 "field_friction": round(local_friction, 4),
                 "local_friction": round(local_friction, 4),
-                "wall_detected": local_friction > INV_PHI,
+                "wall_threshold": thresh,
+                "wall_detected": local_friction > thresh,
                 "kernel_density": 0.0
             }
 
         c_vec = np.array(coords, dtype=np.float64)
         if not self.nodes:
-            self.nodes.append((c_vec, local_friction))
+            if mutate:
+                self.nodes.append((c_vec, local_friction))
             return {
                 "field_friction": round(local_friction, 4),
                 "local_friction": round(local_friction, 4),
-                "wall_detected": local_friction > INV_PHI,
-                "kernel_density": 1.0
+                "wall_threshold": thresh,
+                "wall_detected": local_friction > thresh,
+                "kernel_density": 1.0 if mutate else 0.0
             }
 
         dim = len(c_vec)
@@ -72,10 +86,13 @@ class RBFConstraintScout:
         else:
             field_friction = local_friction
 
-        self.nodes.append((c_vec, local_friction))
+        if mutate:
+            self.nodes.append((c_vec, local_friction))
+
         return {
             "field_friction": round(field_friction, 4),
             "local_friction": round(local_friction, 4),
-            "wall_detected": field_friction > INV_PHI,
+            "wall_threshold": thresh,
+            "wall_detected": field_friction > thresh,
             "kernel_density": round(avg_density, 4)
         }

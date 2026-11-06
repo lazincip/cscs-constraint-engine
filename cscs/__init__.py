@@ -1,5 +1,6 @@
 """
-CSCS Constraint Physics Engine (v2026.10.1)
+CSCS Constraint Physics Engine: Zero-GPU Spectral Manifold & Contractive
+Telemetry Middleware for Small Language Models (SLMs) (v2026.10.2)
 Principal Investigator & Author: Lazaro M. Echenique-Diaz, Ph.D.
 """
 
@@ -20,4 +21,4 @@ __all__ = [
     "T3LBStateCodec",
     "CSCSMiddlewareEngine"
 ]
-__version__ = "2026.10.1"
+__version__ = "2026.10.2"

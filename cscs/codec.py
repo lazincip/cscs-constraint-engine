@@ -1,7 +1,7 @@
 """
-T3LBStateCodec: 13-dimensional state-space serializer for stateless SLM
-context handoffs across edge devices (<100 bytes per state seed, lossless
-at 2-decimal fixed precision).
+T3LBStateCodec: 13-dimensional telemetry summary serializer for stateless SLM
+context handoffs across edge devices (93 bytes per state seed, lossless
+at 2-decimal fixed precision for the 13 summary scalars).
 """
 
 import math as m
@@ -12,13 +12,13 @@ from typing import Dict, Any
 
 class T3LBStateCodec:
     """
-    Computes and serializes the 13 explicit Constraint Physics dimensions
-    into a compact 93-byte T3LB seed string (lossless at 2-decimal precision):
-    X (Gap Tolerance), Y (Human Relay Gain), Z (Persistence),
-    W (Constraint Density), P (Physical Grounding), T (Time Horizon),
-    R (Reflexivity), S (Somatic Coupling), V (Veto Strength),
-    N (Narrative Coherence), E (Ecological Resilience),
-    B (Bleaching/Crash Recovery), Q (State Coherence).
+    Computes and serializes all 13 Constraint Space Coordinate System (CSCS)
+    dimensions into a compact 93-byte T3LB telemetry seed string:
+    X (Gap/Novelty Tolerance), Y (Quality Relay Gain), Z (Manifold Persistence),
+    W (Constraint Density), P (Compression Efficiency), T (Window Horizon Saturation),
+    R (Reflexivity / Inverse Friction), S (Kernel Density Coupling), V (Veto Strength),
+    N (Contraction Convergence), E (Effective Rank Ratio),
+    B (Bleaching/Block Recovery), Q (State Coherence).
     """
 
     DIMENSIONS = ["X", "Y", "Z", "W", "P", "T", "R", "S", "V", "N", "E", "B", "Q"]
@@ -31,15 +31,27 @@ class T3LBStateCodec:
         }
 
     def update_from_cycle(self, resonance: float, field_friction: float,
-                          in_manifold: float, quality: float, blocked: bool):
+                          in_manifold: float, quality: float, blocked: bool,
+                          compression_ratio: float = 0.85, kernel_density: float = 0.50,
+                          effective_rank: float = 3.0, iterations: int = 4,
+                          cycles: int = 1):
+        self.dims["T"] = round(min(1.50, 0.50 + 0.50 * min(1.0, cycles / 64.0)), 3)
+
         if blocked:
             self.dims["B"] = min(1.50, round(self.dims["B"] + 0.02, 3))
             self.dims["V"] = min(1.20, round(self.dims["V"] + 0.03, 3))
+            self.dims["X"] = max(0.40, round(self.dims["X"] - 0.02, 3))
             return
 
-        self.dims["W"] = round(0.80 + 0.40 * (0.5 * resonance + 0.5 * in_manifold), 3)
+        self.dims["X"] = round(0.60 + 0.40 * (1.0 - field_friction), 3)
+        self.dims["Y"] = round(0.75 + 0.50 * quality, 3)
         self.dims["Z"] = round(0.75 + 0.24 * in_manifold, 3)
+        self.dims["W"] = round(0.80 + 0.40 * (0.5 * resonance + 0.5 * in_manifold), 3)
+        self.dims["P"] = round(0.50 + 0.50 * max(0.0, min(1.0, 1.0 - compression_ratio * 0.5)), 3)
         self.dims["R"] = round(0.60 + 0.35 * (1.0 - field_friction), 3)
+        self.dims["S"] = round(0.50 + 0.50 * max(0.0, min(1.0, kernel_density)), 3)
+        self.dims["N"] = round(0.50 + 0.50 * max(0.0, 1.0 - (iterations / 10.0)), 3)
+        self.dims["E"] = round(0.50 + 0.50 * min(1.0, effective_rank / 8.0), 3)
         self.dims["Q"] = round(0.50 + 0.45 * (quality * resonance), 3)
 
     def magnitude(self) -> float:
@@ -61,3 +73,10 @@ class T3LBStateCodec:
         matches = re.findall(r"([A-Z])(\d+\.\d+)", parts[2])
         dims = {k: float(v) for k, v in matches}
         return {"version": version, "magnitude": mag, "dimensions": dims}
+
+    def load_seed(self, seed_str: str) -> Dict[str, Any]:
+        parsed = self.decode_seed(seed_str)
+        for k, v in parsed["dimensions"].items():
+            if k in self.dims:
+                self.dims[k] = float(v)
+        return parsed

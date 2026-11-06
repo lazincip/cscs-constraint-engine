@@ -20,7 +20,7 @@ class MDLCompressionRouter:
     3. Spectral Coordinate Sparse Projection (structural summary).
 
     Caches embedding vectors and compressed reference lengths in a bounded
-    registry (max 128 entries) for sub-0.2ms execution.
+    registry (max 64 entries) for sub-0.2ms execution.
     """
 
     def __init__(self, manifold: SpectralManifold, max_registry: int = 64):
@@ -30,7 +30,7 @@ class MDLCompressionRouter:
         self.raw_registry: OrderedDict[str, bytes] = OrderedDict()
         self.vector_registry: OrderedDict[str, np.ndarray] = OrderedDict()
 
-    def compress(self, text: str, coords: List[float]) -> Dict[str, Any]:
+    def compress(self, text: str, coords: List[float], mutate: bool = True) -> Dict[str, Any]:
         raw_bytes = text.encode("utf-8")
         raw_len = max(1, len(raw_bytes))
         key = h.blake2b(raw_bytes, digest_size=6).hexdigest()
@@ -63,13 +63,14 @@ class MDLCompressionRouter:
         else:
             spectral_ratio = 1.0
 
-        self.archive[key] = zlib_bytes
-        self.raw_registry[key] = raw_bytes
-        self.vector_registry[key] = v
-        if len(self.vector_registry) > self.max_registry:
-            self.archive.popitem(last=False)
-            self.raw_registry.popitem(last=False)
-            self.vector_registry.popitem(last=False)
+        if mutate:
+            self.archive[key] = zlib_bytes
+            self.raw_registry[key] = raw_bytes
+            self.vector_registry[key] = v
+            if len(self.vector_registry) > self.max_registry:
+                self.archive.popitem(last=False)
+                self.raw_registry.popitem(last=False)
+                self.vector_registry.popitem(last=False)
 
         candidates = [
             ("lz77_entropy", lz_ratio),
