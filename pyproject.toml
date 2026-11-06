@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cscs-constraint-engine"
-version = "2026.10.1"
-description = "Zero-GPU Spectral Manifold, Banach Contraction, and Drift Telemetry Middleware for Edge & Small Language Models (SLMs)"
+version = "2026.10.2"
+description = "CSCS Constraint Physics Engine: Zero-GPU Spectral Manifold & Contractive Telemetry Middleware for Small Language Models (SLMs)"
 readme = "README.md"
 authors = [
     { name = "Lazaro M. Echenique-Diaz, Ph.D.", email = "lazincip@gmail.com" }

@@ -2,6 +2,39 @@
 
 All notable changes to `cscs-constraint-engine` are documented in this file.
 
+## [2026.10.2] - 2026-11-06 (Addendum Round: External-Audit Fixes)
+
+This release implements the consolidated fix queue from five independent reviews of v2026.10.1 (a preregistered self-benchmark study; code-level critiques by Qwen and Copilot; from-scratch reproduction by Mistral; execution audits by Maya/Sesame AI and Z.ai/GLM; synthesis by DeepSeek), adjudicated by the independent auditor (Agent CPh) and decided by the PI. Per the PI's record requirement, **everything dropped or modified in this round is recorded here**, including documentation-only decisions.
+
+### Fixed
+- **Presentation-order block (Test K / DeepSeek H1).** A prompt's verdict no longer depends on when it is first presented. Root cause: enrollment left the contraction mirror's memory empty, so early resonance was synthetic (identically 1.0) under a cycles<3 grace period. Enrollment now anchors the mirror, the grace period is removed, and resonance is anchor-weighted (0.70 anchor barycenter / 0.30 session trajectory). The demo Turn-2 prompt is allowed at cycle 1 (friction 0.5825) and at cycle 4 on first presentation (0.5757); in v2026.10.1 it blocked at cycle 4 (0.6509).
+- **State poisoning.** Blocked prompts previously wrote mirror memory and scout nodes before the gate decided. Blocked prompts now mutate no module state; additionally, in the calibrated state, allowed prompts commit state (mirror, scout, compression, manifold) only from the core attractor zone (anchor-only friction ≤ 1/Φ) — the two-zone commit budget. Covered by a new regression test (`test_state_poisoning_and_terse_salad_gates`).
+- **Numerical-noise principal axis.** `SpectralManifold._fit_subspace` used an absolute singular-value threshold (S > 1e-9) that admitted a noise axis at the centered-rank limit (4th SV ≈ 1.6e-8 at n = 4). Replaced with a relative eigenvalue cutoff (λ ≥ 1e-12 × trace(G)); verified k = 3 / 4 / 9 at n = 4 / 5 / 10, covered by a new invariant test.
+- **Brevity penalty.** Terse valid prompts (e.g. "Explain UCEs.") were blocked 93% of the time in the benchmark study. The quality gate was rebuilt (content-word uniqueness, reduced length saturation, stopword-capped stuffing penalty): battery items F1–F3 pass, while keyword salad (E1), clickbait (E2), and stuffed spam (D4) are blocked at the quality gate.
+- **Verifier integer blindness.** `SPECIFICITY_RE` matched almost no plain integers; the demo's correct reply ("58 to 63 Ma") counted zero specifics. The pattern set now covers plain integers, integer percentages, sentence-initial specifics, and unit quantities, and hedged citations are discounted (hedge-discount slope 0.70, floor 0.15, calibrated so hedged integer ranges remain VERIFIED).
+- **Dream-mode scoring.** `DriftVerifier.verify` in dream mode previously returned a constant risk (0.05), exempting dream outputs from audit. Dream replies are now scored with the standard risk and hard-capped at 0.75. Wall bypass under `dreaming=True` is unchanged (documented policy; dreaming never alters any score, only the consequence at the wall).
+- **T3LB codec.** All 13 state dimensions now update from live telemetry every cycle (7 of 13 were constants). `decode()` round-trips at 2-decimal precision (new invariant test, including the BLAKE2b empty-string commitment vector).
+- **Penalty-transform saturation.** The OOD penalty `(r − 0.30) × 1.45` saturated for r ≥ ~0.99; replaced with `(r − 0.30) / 0.70` in the scout, and the same transform harmonized into the graduation (τ95) path so calibration and live scoring use one friction definition.
+
+### Changed
+- **Policy: hybrid graduation (PI decision Q2 = D2 + automatic shift).** The engine starts adaptive (fixed 1/Φ wall, cold-start anchor accumulation) and graduates automatically to a calibrated wall τ95 (leave-one-out 95th-percentile anchor friction) once τ95 is estimable from ≥ 4 anchored mirror vectors. Reference battery: **τ95 = 0.6566**. `pre_inference` results now report `policy_state` and the active `wall_threshold`.
+- **Evaluation criteria (PI decision Q1).** Track A success is now judged by **friction separation + AUROC** (friction, resonance deficit, and raw residual reported together). The v2026.10.1 criterion — raw-residual margin ≥ 0.10 with strict A < C < D residual ordering — is **retired**: the residual floor (≈ √(1 − k/512) ≈ 0.988) makes a 0.10 residual margin geometrically unreachable at seed scale. Project description reframed drift-first (trajectory discipline); the project title is unchanged.
+- **Demo fingerprint.** Demo Turn-1 post-inference risk: **0.195 (v2026.10.1) → 0.295 (v2026.10.2)**, a consequence of the verifier integer fix above. All other demo verdicts are unchanged (VERIFIED / SPORADIC_RISK / SANCTIONED_DREAM / BLOCKED).
+- **Benchmark fixture committed.** The Track A battery (25 prompts + 4 verifier pairs) and its runner are now in the repository (`benchmarks/`) — in v2026.10.1 only the resulting values were published, which external audit correctly flagged as not reproducible. Note: several calibration constants in this release were validated against this battery; it functions as a regression suite, and the release's unbiased discrimination estimate is the auditor's held-out check (AUROC 0.8056) in [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+- **Latency.** The calibrated path performs additional anchor passes per turn; measured on the reference VM (Linux, Python 3.12.3, numpy 1.26.4): 300 distinct-prompt turns, median 2.645 ms / P95 3.412 ms. v2026.10.1 figures (0.45–1.07 ms medians, other hardware) do not carry over; the README states the operating envelope with its environment instead of a cross-machine figure.
+- **Metadata.** `CITATION.cff` now carries the **concept DOI** (10.5281/zenodo.23750262), chosen deliberately for release-over-release stability (v2026.10.1's file carried no DOI line; its README badge referenced the version DOI). Version bumped to 2026.10.2 in `pyproject.toml`, `CITATION.cff`, and `cscs/__init__.py`.
+
+### Documented (no code change)
+- **Intended use & non-goals** statement added to README (PI's audience ruling): the engine serves known, deliberately seeded domains on operator hardware; it is not an anything-goes chat guardrail.
+- **Nomenclature note** added to README: CSCS = Constraint Space Coordinate System (Yamagata University), unrelated to the Swiss National Supercomputing Centre (CSCS, Lugano).
+- **CJK limitation** documented: unspaced scripts score as single-token prompts at the quality gate (0.20) and are blocked; a tokenizer fix is scoped separately.
+- **Verifier and Lyapunov scope notes** added to [docs/LIMITATIONS.md](docs/LIMITATIONS.md): the verifier scores specificity density, not truth; the Lyapunov exponent is negative by construction.
+- **Session-drift isolation results** published in [docs/BENCHMARKS.md](docs/BENCHMARKS.md): no dynamic drift channel (fresh vs. 300-turn admissions identical); the calibrated wall's baseline permissiveness at 4 seeds (29/30 fluent far-OOD admitted) is documented as Limitation 1 rather than attributed to drift.
+- **State restore** (`load_seed`) remains unimplemented and is now documented as such.
+
+### Verification (independent auditor, this release)
+Unit tests 6/6 · demo verdicts and fingerprints reproduced · Track A both modes (stateful margin 0.0528, AUROC A-vs-D friction 0.8333 / resonance 0.9167; frozen margin 0.0566, AUROC 0.9167 / 0.9167) · Test K and Test L pass · SV spectrum exact at n = 4/5/10 · held-out AUROC 0.8056 · drift isolation arms equal · latency as above.
+
 ## [2026.10.1] - 2026-10-28 (Round 1 & Round 2 Audit Polish)
 
 ### Documentation (R3, pre-release — no code changes)

@@ -6,8 +6,8 @@ We actively welcome systems engineers, local AI builders, and researchers workin
 
 ## High-Priority Collaboration Tracks
 
-1. **Cold-Start Subspace Calibration & Keyword-Salad Defense (F4 / Track A Challenge):**
-   * Improving held-out in-domain vs. far-OOD separation margin ($D - A \ge 0.10$ and $A < C < D$ ordering) under small-seed initialization ($N = 4$) while resisting n-gram keyword-salad gaming (`E1`) and preserving $< 2.0\text{ ms}$ P95 CPU latency.
+1. **Cold-Start Calibration & Friction Separation (Track A Challenge):**
+   * Improving held-out in-domain vs. far-OOD **friction separation and AUROC** (the criteria adopted in v2026.10.2; the former raw-residual margin criterion was retired as geometrically unreachable — see [docs/LIMITATIONS.md](docs/LIMITATIONS.md)) under small-seed initialization ($N = 4$, and larger enrollments), while resisting n-gram keyword-salad gaming (`E1`) and keeping per-turn latency in the low-millisecond class.
 2. **SLM Runtime Integrations (`llama.cpp`, `Ollama`, `vLLM`, `MLX`):**
    * Building native pre/post-inference hooks for Apple Silicon (`MLX` / unified memory), Raspberry Pi / Jetson edge nodes, and quantized 1B–8B parameter models (`Llama-3.2`, `Qwen-2.5`, `Phi-4`, `Gemma-2`).
 3. **Empirical Benchmark Suites (`HalluEval`, `TruthfulQA`, `LongBench`):**
@@ -19,7 +19,7 @@ We actively welcome systems engineers, local AI builders, and researchers workin
 
 ## Evaluation Protocol & Committed Baseline
 
-All benchmark submissions must adhere to the standardized control protocol (Track A / Track B) and are compared against the **committed `v2026.10.1` baseline** — full protocol, environment manifest, latency probes, and held-out battery results live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md). Known limitations the baseline documents are in [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
+All benchmark submissions must adhere to the standardized control protocol (Track A / Track B) and are compared against the **committed `v2026.10.2` baseline** (battery and runner in `benchmarks/`) — full protocol, environment manifest, latency probes, and held-out battery results live in [docs/BENCHMARKS.md](docs/BENCHMARKS.md). Known limitations the baseline documents are in [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 
 ---
 
