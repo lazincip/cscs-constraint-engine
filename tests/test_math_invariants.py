@@ -59,7 +59,11 @@ class TestCSCSMathInvariants(unittest.TestCase):
         self.assertEqual(m4.components.shape[0], 3)
 
     def test_in_manifold_vs_ood_residual(self):
-        """Verify in-manifold prompts have near-zero residual while OOD prompts spike within [0.0, 1.0]."""
+        """Math invariant ONLY: a vector inside the fitted span reconstructs near-exactly
+        (residual < 0.05), while an unrelated string's projection stays high within [0.0, 1.0].
+        corpus[0] was learned in setUp, so this verifies the projection arithmetic — it is
+        NOT a held-out generalization claim. Held-out discrimination evidence (and its
+        limits) lives in docs/BENCHMARKS.md and docs/LIMITATIONS.md."""
         proj_in = self.manifold.project(self.corpus[0])
         proj_ood = self.manifold.project("bake chocolate cake with vanilla frosting")
         self.assertLess(proj_in["reconstruction_error"], 0.05)
