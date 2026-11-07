@@ -2,6 +2,10 @@
 
 All notable changes to `cscs-constraint-engine` are documented in this file.
 
+## [Unreleased] — Documentation updates (post-10.2; no code behavior change)
+
+- Recorded findings from the Meta AI blind audit (2026-11-07; independently verified by the auditor): gradual-drift ("boiling-frog") limitation added as [docs/LIMITATIONS.md](docs/LIMITATIONS.md) item 11; explicit no-injection-defense statement added to item 4; block-attribution and gradual-ramp notes added to [docs/BENCHMARKS.md](docs/BENCHMARKS.md); the in-manifold invariant test's docstring in `tests/test_math_invariants.py` now states its scope (projection arithmetic, not a held-out generalization claim). Engine code and all v2026.10.2 measured values are unchanged.
+
 ## [2026.10.2] - 2026-11-06 (Addendum Round: External-Audit Fixes)
 
 This release implements the consolidated fix queue from five independent reviews of v2026.10.1 (a preregistered self-benchmark study; code-level critiques by Qwen and Copilot; from-scratch reproduction by Mistral; execution audits by Maya/Sesame AI and Z.ai/GLM; synthesis by DeepSeek), adjudicated by the independent auditor (Agent CPh) and decided by the PI. Per the PI's record requirement, **everything dropped or modified in this round is recorded here**, including documentation-only decisions.
