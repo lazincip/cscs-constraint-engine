@@ -30,6 +30,10 @@
 
 Far-OOD admissions out of 30 fluent far-OOD probes, v2026.10.2: **fresh engine 29/30** (median friction 0.5835); after 300 adjacent-domain turns with learning on **29/30** (0.5936); learning off **29/30** (0.5983); mixed protocol, learning off **29/30** (0.5957). Session history moves admissions by **zero** and median friction by $\le +0.015$: there is no dynamic drift channel in this build (blocked prompts mutate nothing; boundary-band prompts commit nothing). The 29/30 figure itself is a **baseline calibration property** — the $\tau_{95}$ wall sits above most fluent far-OOD friction at 4-seed enrollment — and is documented as a limitation, not a session effect.
 
+**Block attribution (blind audit, Meta AI 2026-11-07; verified):** every blocked item in the committed battery (`D4`, `E1`, `E2`) is blocked by the **quality gate** (q = 0.220 / 0.220 / 0.162); at $\tau_{95} = 0.6566$ the friction wall alone blocks no well-formed prompt in this battery. Wall behavior is corpus-dependent — on the homogeneous intake-protocol corpus of the applications scenario test (wall calibrated to 0.618), the wall did block a drift turn at friction 0.6300.
+
+**Gradual-ramp probe (same audit; independently reproduced):** a five-step lexical ramp from the seed topic to an unrelated one was allowed at every step in a stateful session (friction 0.46–0.62), with the early steps committing state. Per-turn gating does not see ramps; see [LIMITATIONS.md](LIMITATIONS.md) item 11.
+
 ### Latency (300 distinct-prompt turns)
 
 Reference VM (Linux, Python 3.12.3, numpy 1.26.4): **median 2.645 ms · mean 2.620 ms · P95 3.412 ms · max 3.574 ms**. v2026.10.2 performs additional anchor passes per turn (anchor reflect + anchor scout in the calibrated state) and is slower per turn than v2026.10.1 on the same class of hardware; cross-machine latency claims are not made.
